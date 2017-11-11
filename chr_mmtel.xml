@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<chr>
+    <structs>
+        <struct name="CHR_SYSCLOCK_T">
+            <field name="wSysYear" type="WORD16"/>
+            <field name="ucSysMon" type="WORD16"/>
+            <field name="ucSysDay" type="WORD16"/>
+            <field name="ucSysHour" type="WORD16"/>
+            <field name="ucSysMin" type="WORD16"/>
+            <field name="ucSysSec" type="WORD16"/>
+            <field name="wMilliSec" type="WORD16"/>
+            <field name="ucSysWeek" type="WORD16"/>
+        </struct>
+    </structs>
+    <fields>
+        <field name="bReceivedMsg" type="BYTE"/>
+        <field name="achXZteCause" type="CHAR" array="48"/>
+        <field name="tSipRequestTimestamp" type="CHR_SYSCLOCK_T"/>
+        <field name="tSipReponseTimestamp" type="CHR_SYSCLOCK_T"/>
+        <field name="adwFailCode" type="WORD32" array="8"/>
+    </fields>
+</chr>
