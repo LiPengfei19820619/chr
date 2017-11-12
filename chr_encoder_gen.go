@@ -46,6 +46,8 @@ type chrEncoderWriter struct {
 	chrWriter
 }
 
+var jsonTypeDict = map[string]string{"BYTE": "NUMBER", "WORD16": "NUMBER", "WORD32": "NUMBER", "CHAR": "STRING"}
+
 func main() {
 	chrDefXML := flag.String("if", "", "chr definition xml")
 	outDir := flag.String("o", ".", "output to the dir")
@@ -79,12 +81,13 @@ func main() {
 
 func (c *chrDefinition) save(dir string) {
 	structFile := path.Join(dir, "chr_mmtel.inc")
-	//encodeFile := path.Join(dir, "chr_encode_mmtel.inc")
+	encodeFile := path.Join(dir, "chr_encode_mmtel.inc")
 
 	var sw chrStructWriter
-	//var ew chrEncoderWriter
+	var ew chrEncoderWriter
 
 	c.writeToFile(&sw, structFile, "chr_mmtel")
+	c.writeToFile(&ew, encodeFile, "")
 }
 
 func (c *chrDefinition) writeToFile(w chrWriter, file string, structName string) error {
@@ -151,4 +154,36 @@ func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
 	out += ";\n"
 
 	f.WriteString(out)
+}
+
+func (w *chrEncoderWriter) RootBegin(f *os.File) {
+	f.WriteString("CHR_ENC_BEGIN(ptChrMsg, ptJson)" + "\n")
+}
+
+func (w *chrEncoderWriter) RootEnd(f *os.File) {
+	f.WriteString("CHR_ENC_END()\n")
+}
+
+func (w *chrEncoderWriter) StructBegin(f *os.File, s *structDefinition) {
+	out := fmt.Sprintf("CHR_ENC_STRUCT_BEGIN(%s)\n", s.Name)
+	f.WriteString(out)
+}
+
+func (w *chrEncoderWriter) StructEnd(f *os.File, sd *structDefinition) {
+	f.WriteString("CHR_ENC_STRUCT_END()\n")
+}
+
+func (w *chrEncoderWriter) WriteField(f *os.File, fd *fieldDefinition) {
+	out := fd.Name + "\n"
+
+	f.WriteString(out)
+}
+
+func getJSONType(ctype string) string {
+	jsontype, find := jsonTypeDict[ctype]
+	if find {
+		return jsontype
+	}
+
+	return "OBJECT"
 }
