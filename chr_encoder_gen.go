@@ -12,9 +12,10 @@ import (
 )
 
 type fieldDefinition struct {
-	Name  string `xml:"name,attr"`
-	Type  string `xml:"type,attr"`
-	Array int    `xml:"array,attr"`
+	Name      string `xml:"name,attr"`
+	Type      string `xml:"type,attr"`
+	Array     int    `xml:"array,attr"`
+	IsPadding bool   `xml:"ispadding,attr"`
 }
 
 type structDefinition struct {
@@ -132,7 +133,7 @@ func (w *chrStructWriter) RootBegin(f *os.File) {
 }
 
 func (w *chrStructWriter) RootEnd(f *os.File) {
-	f.WriteString("} " + strings.ToUpper("chr_mmtel") + ";\n")
+	f.WriteString("} " + strings.ToUpper("CHR_MMTEL_DATA_T, PUB_CHR_MSG_T") + ";\n")
 }
 
 func (w *chrStructWriter) StructBegin(f *os.File, s *structDefinition) {
@@ -145,7 +146,7 @@ func (w *chrStructWriter) StructEnd(f *os.File, sd *structDefinition) {
 }
 
 func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
-	out := fmt.Sprintf("%s%-16s%s%s", "    ", fd.Type, "    ", fd.Name)
+	out := fmt.Sprintf("%s%-24s%s%s", "    ", fd.Type, "    ", fd.Name)
 
 	if fd.Array > 0 {
 		out = fmt.Sprintf("%s[%d]", out, fd.Array)
@@ -157,24 +158,45 @@ func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
 }
 
 func (w *chrEncoderWriter) RootBegin(f *os.File) {
-	f.WriteString("CHR_ENC_BEGIN(ptChrMsg, ptJson)" + "\n")
+	f.WriteString("CHR_ENC_MMTEL_BEGIN(ptChrData, ptJson)" + "\n")
 }
 
 func (w *chrEncoderWriter) RootEnd(f *os.File) {
-	f.WriteString("CHR_ENC_END()\n")
+	f.WriteString("CHR_END_MMTEL_END\n")
 }
 
 func (w *chrEncoderWriter) StructBegin(f *os.File, s *structDefinition) {
-	out := fmt.Sprintf("CHR_ENC_STRUCT_BEGIN(%s)\n", s.Name)
+	out := fmt.Sprintf("CHR_ENC_STRUCT_BEGIN(ptChrData, %s, ptJson)\n", s.Name)
 	f.WriteString(out)
 }
 
 func (w *chrEncoderWriter) StructEnd(f *os.File, sd *structDefinition) {
-	f.WriteString("CHR_ENC_STRUCT_END()\n")
+	f.WriteString("CHR_ENC_STRUCT_END\n")
 }
 
 func (w *chrEncoderWriter) WriteField(f *os.File, fd *fieldDefinition) {
-	out := fd.Name + "\n"
+	if fd.IsPadding {
+		return
+	}
+
+	out := "    "
+	jsonType := getJSONType(fd.Type)
+	if fd.Array > 0 && fd.Type != "CHAR" {
+		numField := fd.Name + "Num"
+		if jsonType == "OBJECT" {
+			out += fmt.Sprintf("CHR_ENC_STRUCT_ARRAY(ptChrData, %s, %s, %d, %s, ptJson)", fd.Name, fd.Type, fd.Array, numField)
+		} else {
+			out += fmt.Sprintf("CHR_ENC_ARRAY(ptChrData, %s, %s, %d, %s, ptJson)", fd.Name, jsonType, fd.Array, numField)
+		}
+	} else {
+		if jsonType == "OBJECT" {
+			out += fmt.Sprintf("CHR_ENC_STRUCT(ptChrData, %s, %s, ptJson)", fd.Name, fd.Type)
+		} else {
+			out += fmt.Sprintf("CHR_ENC_ITEM(ptChrData, %s, %s, ptJson)", fd.Name, jsonType)
+		}
+	}
+
+	out += "\n"
 
 	f.WriteString(out)
 }

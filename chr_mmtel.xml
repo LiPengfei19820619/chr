@@ -11,12 +11,28 @@
             <field name="wMilliSec" type="WORD16"/>
             <field name="ucSysWeek" type="WORD16"/>
         </struct>
+        <struct name="CHR_STAT_STATUS_T">
+            <field name="wStatId" type="WORD16"/>
+            <field name="bFlag" type="BYTE"/>
+            <field name="bStatResult" type="BYTE"/>
+            <field name="bFailTypeFlag" type="BYTE"/>
+            <field name="abPad" type="BYTE" array="3" ispadding="true"/>
+        </struct>
     </structs>
     <fields>
         <field name="bReceivedMsg" type="BYTE"/>
+        <field name="bMoMtFlag" type="BYTE"/>
+        <field name="bCtxFlag" type="BYTE"/>
+        <field name="dwCallFailCause" type="WORD32"/>
+        <field name="bRcvXZteCause" type="BYTE"/>
         <field name="achXZteCause" type="CHAR" array="48"/>
+        <field name="chSgroupMark" type="CHAR" array="32"/>
+        <field name="wSgroup" type="WORD16"/>
         <field name="tSipRequestTimestamp" type="CHR_SYSCLOCK_T"/>
         <field name="tSipReponseTimestamp" type="CHR_SYSCLOCK_T"/>
+        <field name="tStatStatus" type="CHR_STAT_STATUS_T" array="50"/>
+        <field name="tStatStatusNum" type="WORD32"/>
         <field name="adwFailCode" type="WORD32" array="8"/>
+        <field name="adwFailCodeNum" type="WORD32"/>
     </fields>
 </chr>
