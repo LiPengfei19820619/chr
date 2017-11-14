@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<chr>
+<chr name="CHR_MMTEL_DATA_T">
     <structs>
         <struct name="CHR_SYSCLOCK_T">
-            <field name="wSysYear" type="WORD16"/>
+            <field name="wSysYear" type="WORD16" comment="年"/>
             <field name="ucSysMon" type="WORD16"/>
             <field name="ucSysDay" type="WORD16"/>
             <field name="ucSysHour" type="WORD16"/>
@@ -20,19 +20,64 @@
         </struct>
     </structs>
     <fields>
-        <field name="bReceivedMsg" type="BYTE"/>
-        <field name="bMoMtFlag" type="BYTE"/>
+        <field name="bReceivedMsg" type="BYTE" comment="收到过的消息"/>
+        <field name="bMoMtFlag" type="BYTE" comment="群呼叫关系"/>
         <field name="bCtxFlag" type="BYTE"/>
         <field name="dwCallFailCause" type="WORD32"/>
         <field name="bRcvXZteCause" type="BYTE"/>
         <field name="achXZteCause" type="CHAR" array="48"/>
         <field name="chSgroupMark" type="CHAR" array="32"/>
         <field name="wSgroup" type="WORD16"/>
+        <field name="achDialedURI" type="CHAR" array="128"/>
+        <field name="bCallType" type="BYTE"/>
+        <field name="bCallProcessFlag" type="BYTE"/>
+        <field name="bReleaseLocationFlag" type="BYTE"/>
+        <field name="dwCscfNodeId" type="WORD32"/>
+        <field name="bFailCodeNum" type="BYTE"/>
+        <field name="bServiceCounter" type="BYTE"/>
+        <field name="bSipCauseTimes" type="BYTE"/>
+        <field name="dwCHRType" type="WORD32"/>
+        <field name="wCHRAttrNodeRole" type="WORD16"/>
+        <field name="wCHRCloseReason" type="WORD16"/>
+        <field name="wSdpMediaIdentifier" type="WORD16"/>
+        <field name="wModule" type="WORD16"/>
+        <field name="wInstNo" type="WORD16"/>
+        <field name="abPad1" type="BYTE" array="2" ispadding="true"/>
+        <field name="chUserSessionId" type="CHAR" array="128"/>
+        <field name="chChargingId" type="CHAR" array="128"/>
+        <field name="chCallerTelUrl" type="CHAR" array="128"/>
+        <field name="chCallerSipUrl" type="CHAR" array="128"/>
+        <field name="chAccessNetWorkInfo" type="CHAR" array="128"/>
+        <field name="chOriginatingIOI" type="CHAR" array="64"/>
+        <field name="chCalledTelUrl" type="CHAR" array="128"/>
+        <field name="chCalledSipUrl" type="CHAR" array="128"/>
+        <field name="chTerminatingsIOI" type="CHAR" array="64"/>
+
         <field name="tSipRequestTimestamp" type="CHR_SYSCLOCK_T"/>
         <field name="tSipReponseTimestamp" type="CHR_SYSCLOCK_T"/>
+        <field name="tServiceEndTimestamp" type="CHR_SYSCLOCK_T"/>
+        <field name="tConnectTimestamp" type="CHR_SYSCLOCK_T"/>
+
+        <field name="chChargedPartyTelUrl" type="CHAR" array="128"/>
+        <field name="chChargedPartySipUrl" type="CHAR" array="128"/>
+        <field name="chServiceIdentity" type="CHAR" array="64"/>
+        <field name="chConferenceIdentifier" type="CHAR" array="128"/>
+        <field name="chServiceReasonReturnCode" type="CHAR" array="6"/>
+        <field name="chCallingUserAgent" type="CHAR" array="64"/>
+        <field name="chCalledUserAgent" type="CHAR" array="64"/>
+        <field name="bDisconnectDirect" type="BYTE"/>
+        <field name="abPad2" type="BYTE" array="1" ispadding="true"/>
+
+        <field name="chOneTestCaseId" type="CHAR" array="64"/>
+
+        <field name="dwTrailNodeID" type="WORD32"/>
+        <field name="abPad3" type="BYTE" array="4" ispadding="true" comment="对齐"/>
+
+<!--
         <field name="tStatStatus" type="CHR_STAT_STATUS_T" array="50"/>
         <field name="tStatStatusNum" type="WORD32"/>
         <field name="adwFailCode" type="WORD32" array="8"/>
         <field name="adwFailCodeNum" type="WORD32"/>
+-->
     </fields>
 </chr>

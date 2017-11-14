@@ -1,7 +1,7 @@
-#ifndef CHR_MMTEL_INC
-#define CHR_MMTEL_INC
+#ifndef CHR_MMTEL_DATA_INC
+#define CHR_MMTEL_DATA_INC
 
-/* chr_mmtel.inc */
+/* chr_mmtel_data.inc */
 /* 本文件是通过工具自动生成，请勿手工修改 */
 
 #include "tulip.h"
@@ -82,7 +82,7 @@ typedef struct CHR_MMTEL_DATA_T
 
 
 
-#endif /* CHR_MMTEL_INC */
+#endif /* CHR_MMTEL_DATA_INC */
 
 /* The End Of The File. */
 

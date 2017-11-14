@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -16,6 +16,7 @@ type fieldDefinition struct {
 	Type      string `xml:"type,attr"`
 	Array     int    `xml:"array,attr"`
 	IsPadding bool   `xml:"ispadding,attr"`
+	Comment   string `xml:"comment,attr"`
 }
 
 type structDefinition struct {
@@ -25,13 +26,17 @@ type structDefinition struct {
 
 type chrDefinition struct {
 	XMLName xml.Name           `xml:"chr"`
+	Name    string             `xml:"name,attr"`
 	Structs []structDefinition `xml:"structs>struct"`
 	Fields  []fieldDefinition  `xml:"fields>field"`
 }
 
 type chrWriter interface {
-	RootBegin(f *os.File)
-	RootEnd(f *os.File)
+	PreWrite(f *os.File, cd *chrDefinition)
+	PostWrite(f *os.File, cd *chrDefinition)
+
+	RootBegin(f *os.File, cd *chrDefinition)
+	RootEnd(f *os.File, cd *chrDefinition)
 
 	StructBegin(f *os.File, s *structDefinition)
 	StructEnd(f *os.File, s *structDefinition)
@@ -51,10 +56,11 @@ var jsonTypeDict = map[string]string{"BYTE": "NUMBER", "WORD16": "NUMBER", "WORD
 
 func main() {
 	chrDefXML := flag.String("if", "", "chr definition xml")
-	outDir := flag.String("o", ".", "output to the dir")
+	outStructFile := flag.String("struct", ".", "output to the struct definition file")
+	outEncodeFile := flag.String("encode", ".", "output to the encode source file")
 	flag.Parse()
 
-	if *chrDefXML == "" || *outDir == "" {
+	if *chrDefXML == "" || *outStructFile == "" || *outEncodeFile == "" {
 		flag.Usage()
 		return
 	}
@@ -75,41 +81,42 @@ func main() {
 		return
 	}
 
-	log.Println("XMLLName:", chrDef.XMLName)
+	log.Println("XMLLName:", chrDef.XMLName, ",chr name:", chrDef.Name)
 
-	(&chrDef).save(*outDir)
+	(&chrDef).save(*outStructFile, *outEncodeFile)
 }
 
-func (c *chrDefinition) save(dir string) {
-	structFile := path.Join(dir, "chr_mmtel.inc")
-	encodeFile := path.Join(dir, "chr_encode_mmtel.inc")
-
+func (c *chrDefinition) save(structFile string, encodeFile string) {
 	var sw chrStructWriter
 	var ew chrEncoderWriter
 
-	c.writeToFile(&sw, structFile, "chr_mmtel")
-	c.writeToFile(&ew, encodeFile, "")
+	c.writeToFile(&sw, structFile)
+	c.writeToFile(&ew, encodeFile)
 }
 
-func (c *chrDefinition) writeToFile(w chrWriter, file string, structName string) error {
+func (c *chrDefinition) writeToFile(w chrWriter, file string) error {
 	f, err := os.Create(file)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
+	w.PreWrite(f, c)
+
 	for _, sd := range c.Structs {
 		sd.writeToFile(w, f)
 		f.WriteString("\n")
 	}
 
-	w.RootBegin(f)
+	w.RootBegin(f, c)
 
 	for _, fd := range c.Fields {
 		fd.writeToFile(w, f)
 	}
 
-	w.RootEnd(f)
+	w.RootEnd(f, c)
+
+	w.PostWrite(f, c)
 
 	return nil
 }
@@ -127,13 +134,45 @@ func (fd *fieldDefinition) writeToFile(w chrWriter, f *os.File) {
 	w.WriteField(f, fd)
 }
 
-func (w *chrStructWriter) RootBegin(f *os.File) {
-	f.WriteString("typedef struct chr_mmtel" + "\n")
-	f.WriteString("{\n")
+func (w *chrStructWriter) PreWrite(f *os.File, cd *chrDefinition) {
+	fileName := filepath.Base(f.Name())
+	log.Println("fileName:", fileName)
+
+	macro := strings.ToUpper(strings.Replace(fileName, ".", "_", -1))
+	out := fmt.Sprintf("#ifndef %s\n", macro)
+	out += fmt.Sprintf("#define %s\n", macro)
+	out += "\n"
+
+	out += fmt.Sprintf("/* %s */\n", fileName)
+	out += "/* 本文件是通过工具自动生成，请勿手工修改 */\n\n"
+	out += `#include "tulip.h"`
+	out += "\n\n\n"
+
+	f.WriteString(out)
 }
 
-func (w *chrStructWriter) RootEnd(f *os.File) {
-	f.WriteString("} " + strings.ToUpper("CHR_MMTEL_DATA_T, PUB_CHR_MSG_T") + ";\n")
+func (w *chrStructWriter) PostWrite(f *os.File, cd *chrDefinition) {
+	out := "\n\n\n"
+
+	fileName := filepath.Base(f.Name())
+	macro := strings.ToUpper(strings.Replace(fileName, ".", "_", -1))
+	out += fmt.Sprintf("#endif /* %s */\n", macro)
+	out += "\n"
+
+	out += "/* The End Of The File. */\n\n"
+
+	f.WriteString(out)
+}
+
+func (w *chrStructWriter) RootBegin(f *os.File, cd *chrDefinition) {
+	out := fmt.Sprintf("typedef struct %s\n", cd.Name)
+	out += "{\n"
+
+	f.WriteString(out)
+}
+
+func (w *chrStructWriter) RootEnd(f *os.File, cd *chrDefinition) {
+	f.WriteString("} " + strings.ToUpper(cd.Name) + ";\n")
 }
 
 func (w *chrStructWriter) StructBegin(f *os.File, s *structDefinition) {
@@ -152,16 +191,38 @@ func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
 		out = fmt.Sprintf("%s[%d]", out, fd.Array)
 	}
 
-	out += ";\n"
+	out += ";"
+
+	if fd.Comment != "" {
+		out += "    /* " + fd.Comment + " */"
+	}
+
+	out += "\n"
 
 	f.WriteString(out)
 }
 
-func (w *chrEncoderWriter) RootBegin(f *os.File) {
+func (w *chrEncoderWriter) PreWrite(f *os.File, cd *chrDefinition) {
+	fileName := filepath.Base(f.Name())
+	out := fmt.Sprintf("/* %s */\n", fileName)
+	out += "/* 本文件是通过工具自动生成，请勿手工修改 */"
+	out += "\n\n\n"
+
+	f.WriteString(out)
+}
+
+func (w *chrEncoderWriter) PostWrite(f *os.File, cd *chrDefinition) {
+	out := "\n\n\n"
+	out += "/* The End Of The File. */\n\n"
+
+	f.WriteString(out)
+}
+
+func (w *chrEncoderWriter) RootBegin(f *os.File, cd *chrDefinition) {
 	f.WriteString("CHR_ENC_MMTEL_BEGIN(ptChrData, ptJson)" + "\n")
 }
 
-func (w *chrEncoderWriter) RootEnd(f *os.File) {
+func (w *chrEncoderWriter) RootEnd(f *os.File, cd *chrDefinition) {
 	f.WriteString("CHR_END_MMTEL_END\n")
 }
 
