@@ -11,12 +11,19 @@ import (
 	"strings"
 )
 
+type macroDefinition struct {
+	Name    string `xml:"name,attr"`
+	Value   string `xml:"value,attr"`
+	Comment string `xml:"comment,attr"`
+}
+
 type fieldDefinition struct {
-	Name      string `xml:"name,attr"`
-	Type      string `xml:"type,attr"`
-	Array     int    `xml:"array,attr"`
-	IsPadding bool   `xml:"ispadding,attr"`
-	Comment   string `xml:"comment,attr"`
+	Name      string            `xml:"name,attr"`
+	Type      string            `xml:"type,attr"`
+	Array     int               `xml:"array,attr"`
+	IsPadding bool              `xml:"ispadding,attr"`
+	Comment   string            `xml:"comment,attr"`
+	Macros    []macroDefinition `xml:"macro"`
 }
 
 type structDefinition struct {
@@ -42,6 +49,7 @@ type chrWriter interface {
 	StructEnd(f *os.File, s *structDefinition)
 
 	WriteField(f *os.File, field *fieldDefinition)
+	WriteMacro(f *os.File, macro *macroDefinition)
 }
 
 type chrStructWriter struct {
@@ -51,6 +59,11 @@ type chrStructWriter struct {
 type chrEncoderWriter struct {
 	chrWriter
 }
+
+const (
+	indentString    string = "    "
+	seperatorString string = "    "
+)
 
 var jsonTypeDict = map[string]string{"BYTE": "NUMBER", "WORD16": "NUMBER", "WORD32": "NUMBER", "CHAR": "STRING"}
 
@@ -185,7 +198,7 @@ func (w *chrStructWriter) StructEnd(f *os.File, sd *structDefinition) {
 }
 
 func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
-	out := fmt.Sprintf("%s%-24s%s%s", "    ", fd.Type, "    ", fd.Name)
+	out := fmt.Sprintf("%s%-24s%s%s", indentString, fd.Type, seperatorString, fd.Name)
 
 	if fd.Array > 0 {
 		out = fmt.Sprintf("%s[%d]", out, fd.Array)
@@ -195,6 +208,22 @@ func (w *chrStructWriter) WriteField(f *os.File, fd *fieldDefinition) {
 
 	if fd.Comment != "" {
 		out += "    /* " + fd.Comment + " */"
+	}
+
+	out += "\n"
+
+	f.WriteString(out)
+
+	for _, md := range fd.Macros {
+		w.WriteMacro(f, &md)
+	}
+}
+
+func (w *chrStructWriter) WriteMacro(f *os.File, md *macroDefinition) {
+	out := fmt.Sprintf("#define  %-24s%s%s", md.Name, seperatorString, md.Value)
+
+	if md.Comment != "" {
+		out += "    /* " + md.Comment + " */"
 	}
 
 	out += "\n"
@@ -240,7 +269,7 @@ func (w *chrEncoderWriter) WriteField(f *os.File, fd *fieldDefinition) {
 		return
 	}
 
-	out := "    "
+	out := indentString
 	jsonType := getJSONType(fd.Type)
 	if fd.Array > 0 && fd.Type != "CHAR" {
 		numField := fd.Name + "Num"
@@ -260,6 +289,10 @@ func (w *chrEncoderWriter) WriteField(f *os.File, fd *fieldDefinition) {
 	out += "\n"
 
 	f.WriteString(out)
+}
+
+func (w *chrEncoderWriter) WriteMacro(f *os.File, md *macroDefinition) {
+	return
 }
 
 func getJSONType(ctype string) string {

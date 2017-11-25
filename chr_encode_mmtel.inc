@@ -66,6 +66,10 @@ CHR_ENC_MMTEL_BEGIN(ptChrData, ptJson)
     CHR_ENC_ITEM(ptChrData, bDisconnectDirect, NUMBER, ptJson)
     CHR_ENC_ITEM(ptChrData, chOneTestCaseId, STRING, ptJson)
     CHR_ENC_ITEM(ptChrData, dwTrailNodeID, NUMBER, ptJson)
+    CHR_ENC_STRUCT_ARRAY(ptChrData, tStatStatus, CHR_STAT_STATUS_T, 50, tStatStatusNum, ptJson)
+    CHR_ENC_ITEM(ptChrData, tStatStatusNum, NUMBER, ptJson)
+    CHR_ENC_ARRAY(ptChrData, adwFailCode, NUMBER, 8, adwFailCodeNum, ptJson)
+    CHR_ENC_ITEM(ptChrData, adwFailCodeNum, NUMBER, ptJson)
 CHR_END_MMTEL_END
 
 

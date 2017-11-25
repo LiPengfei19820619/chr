@@ -1,83 +1,107 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <chr name="CHR_MMTEL_DATA_T">
-    <structs>
-        <struct name="CHR_SYSCLOCK_T">
-            <field name="wSysYear" type="WORD16" comment="年"/>
-            <field name="ucSysMon" type="WORD16"/>
-            <field name="ucSysDay" type="WORD16"/>
-            <field name="ucSysHour" type="WORD16"/>
-            <field name="ucSysMin" type="WORD16"/>
-            <field name="ucSysSec" type="WORD16"/>
-            <field name="wMilliSec" type="WORD16"/>
-            <field name="ucSysWeek" type="WORD16"/>
-        </struct>
-        <struct name="CHR_STAT_STATUS_T">
-            <field name="wStatId" type="WORD16"/>
-            <field name="bFlag" type="BYTE"/>
-            <field name="bStatResult" type="BYTE"/>
-            <field name="bFailTypeFlag" type="BYTE"/>
-            <field name="abPad" type="BYTE" array="3" ispadding="true"/>
-        </struct>
-    </structs>
-    <fields>
-        <field name="bReceivedMsg" type="BYTE" comment="收到过的消息"/>
-        <field name="bMoMtFlag" type="BYTE" comment="群呼叫关系"/>
-        <field name="bCtxFlag" type="BYTE"/>
-        <field name="dwCallFailCause" type="WORD32"/>
-        <field name="bRcvXZteCause" type="BYTE"/>
-        <field name="achXZteCause" type="CHAR" array="48"/>
-        <field name="chSgroupMark" type="CHAR" array="32"/>
-        <field name="wSgroup" type="WORD16"/>
-        <field name="achDialedURI" type="CHAR" array="128"/>
-        <field name="bCallType" type="BYTE"/>
-        <field name="bCallProcessFlag" type="BYTE"/>
-        <field name="bReleaseLocationFlag" type="BYTE"/>
-        <field name="dwCscfNodeId" type="WORD32"/>
-        <field name="bFailCodeNum" type="BYTE"/>
-        <field name="bServiceCounter" type="BYTE"/>
-        <field name="bSipCauseTimes" type="BYTE"/>
-        <field name="dwCHRType" type="WORD32"/>
-        <field name="wCHRAttrNodeRole" type="WORD16"/>
-        <field name="wCHRCloseReason" type="WORD16"/>
-        <field name="wSdpMediaIdentifier" type="WORD16"/>
-        <field name="wModule" type="WORD16"/>
-        <field name="wInstNo" type="WORD16"/>
-        <field name="abPad1" type="BYTE" array="2" ispadding="true"/>
-        <field name="chUserSessionId" type="CHAR" array="128"/>
-        <field name="chChargingId" type="CHAR" array="128"/>
-        <field name="chCallerTelUrl" type="CHAR" array="128"/>
-        <field name="chCallerSipUrl" type="CHAR" array="128"/>
-        <field name="chAccessNetWorkInfo" type="CHAR" array="128"/>
-        <field name="chOriginatingIOI" type="CHAR" array="64"/>
-        <field name="chCalledTelUrl" type="CHAR" array="128"/>
-        <field name="chCalledSipUrl" type="CHAR" array="128"/>
-        <field name="chTerminatingsIOI" type="CHAR" array="64"/>
+  <structs>
+    <struct name="CHR_SYSCLOCK_T">
+      <field name="wSysYear" type="WORD16" comment="年"/>
+      <field name="ucSysMon" type="BYTE" comment="月"/>
+      <field name="ucSysDay" type="BYTE" comment="日"/>
 
-        <field name="tSipRequestTimestamp" type="CHR_SYSCLOCK_T"/>
-        <field name="tSipReponseTimestamp" type="CHR_SYSCLOCK_T"/>
-        <field name="tServiceEndTimestamp" type="CHR_SYSCLOCK_T"/>
-        <field name="tConnectTimestamp" type="CHR_SYSCLOCK_T"/>
+      <field name="ucSysHour" type="BYTE" comment="时"/>
+      <field name="ucPading0" type="BYTE" ispadding="true"/>
+      <field name="ucSysMin" type="BYTE" comment="分"/>
+      <field name="ucSysSec" type="BYTE" comment="秒"/>
 
-        <field name="chChargedPartyTelUrl" type="CHAR" array="128"/>
-        <field name="chChargedPartySipUrl" type="CHAR" array="128"/>
-        <field name="chServiceIdentity" type="CHAR" array="64"/>
-        <field name="chConferenceIdentifier" type="CHAR" array="128"/>
-        <field name="chServiceReasonReturnCode" type="CHAR" array="6"/>
-        <field name="chCallingUserAgent" type="CHAR" array="64"/>
-        <field name="chCalledUserAgent" type="CHAR" array="64"/>
-        <field name="bDisconnectDirect" type="BYTE"/>
-        <field name="abPad2" type="BYTE" array="1" ispadding="true"/>
+      <field name="wMilliSec" type="WORD16" comment="毫秒"/>
+      <field name="ucSysWeek" type="BYTE" comment="周"/>
+      <field name="ucPading1" type="BYTE" ispadding="true"/>
+    </struct>
+    <struct name="CHR_STAT_STATUS_T">
+      <field name="wStatId" type="WORD16"/>
+      <field name="bFlag" type="BYTE"/>
+      <field name="bStatResult" type="BYTE"/>
+      <field name="bFailTypeFlag" type="BYTE"/>
+      <field name="abPad" type="BYTE" array="3" ispadding="true"/>
+    </struct>
+  </structs>
+  <fields>
+    <field name="bReceivedMsg" type="BYTE" comment="收到过的消息"/>
+    <field name="bMoMtFlag" type="BYTE" comment="群呼叫关系"/>
+    <field name="bCtxFlag" type="BYTE"/>
+    <field name="dwCallFailCause" type="WORD32"/>
+    <field name="bRcvXZteCause" type="BYTE">
+      <macro name="CSS_OBSRV_RCV_XZTECAUSE" value="(BYTE)0x01" comment="接收到X-ZTE-CAUSE"></macro>
+    </field>
+    <field name="achXZteCause" type="CHAR" array="48"/>
+    <field name="chSgroupMark" type="CHAR" array="32"/>
+    <field name="wSgroup" type="WORD16"/>
+    <field name="achDialedURI" type="CHAR" array="128"/>
+    <field name="bCallType" type="BYTE"/>
+    <field name="bCallProcessFlag" type="BYTE">
+      <macro name="CSS_CALL_SEIZE" value="(BYTE)0x01" comment="呼叫占用"/>
+      <macro name="CSS_CALL_CONNECT" value="(BYTE)0x02" comment="呼叫接通"/>
+      <macro name="CSS_CALL_ANSWER" value="(BYTE)0x04" comment="呼叫应答"/>
+      <macro name="CSS_CALL_RELEASE" value="(BYTE)0x08" comment="呼叫释放"/>
+    </field>
+    <field name="bReleaseLocationFlag" type="BYTE">
+      <macro name="CSS_REL_LOCATION_INTERNAL" value="(BYTE)0" comment="内部释放"/>
+      <macro name="CSS_REL_LOCATION_EXTERNAL" value="(BYTE)1" comment="外部释放"/>
+    </field>
+    <field name="dwCscfNodeId" type="WORD32"/>
+    <field name="bFailCodeNum" type="BYTE"/>
+    <field name="bServiceCounter" type="BYTE"/>
+    <field name="bSipCauseTimes" type="BYTE"/>
+    <field name="dwCHRType" type="WORD32">
+      <macro name="CSS_CALL_CHR_CHRTYPE_AS" value="69"/>
+    </field>
+    <field name="wCHRAttrNodeRole" type="WORD16">
+      <macro name="CSS_CALL_CHR_CHRATTRNODEROLE_CALLER" value="0"/>
+      <macro name="CSS_CALL_CHR_CHRATTRNODEROLE_CALLED" value="1"/>
+      <macro name="CSS_CALL_CHR_CHRATTRNODEROLE_CF" value="4"/>
+    </field>
+    <field name="wCHRCloseReason" type="WORD16">
+      <macro name="CSS_CALL_CHR_CHRCLOSEREASON_SUCCESS" value="0"/>
+      <macro name="CSS_CALL_CHR_CHRCLOSEREASON_FAILURE" value="1"/>
+    </field>
+    <field name="wSdpMediaIdentifier" type="WORD16"/>
+    <field name="wModule" type="WORD16"/>
+    <field name="wInstNo" type="WORD16"/>
+    <field name="abPad1" type="BYTE" array="2" ispadding="true"/>
+    <field name="chUserSessionId" type="CHAR" array="128"/>
+    <field name="chChargingId" type="CHAR" array="128"/>
+    <field name="chCallerTelUrl" type="CHAR" array="128"/>
+    <field name="chCallerSipUrl" type="CHAR" array="128"/>
+    <field name="chAccessNetWorkInfo" type="CHAR" array="128"/>
+    <field name="chOriginatingIOI" type="CHAR" array="64"/>
+    <field name="chCalledTelUrl" type="CHAR" array="128"/>
+    <field name="chCalledSipUrl" type="CHAR" array="128"/>
+    <field name="chTerminatingsIOI" type="CHAR" array="64"/>
 
-        <field name="chOneTestCaseId" type="CHAR" array="64"/>
+    <field name="tSipRequestTimestamp" type="CHR_SYSCLOCK_T"/>
+    <field name="tSipReponseTimestamp" type="CHR_SYSCLOCK_T"/>
+    <field name="tServiceEndTimestamp" type="CHR_SYSCLOCK_T"/>
+    <field name="tConnectTimestamp" type="CHR_SYSCLOCK_T"/>
 
-        <field name="dwTrailNodeID" type="WORD32"/>
-        <field name="abPad3" type="BYTE" array="4" ispadding="true" comment="对齐"/>
+    <field name="chChargedPartyTelUrl" type="CHAR" array="128"/>
+    <field name="chChargedPartySipUrl" type="CHAR" array="128"/>
+    <field name="chServiceIdentity" type="CHAR" array="64"/>
+    <field name="chConferenceIdentifier" type="CHAR" array="128"/>
+    <field name="chServiceReasonReturnCode" type="CHAR" array="6"/>
+    <field name="chCallingUserAgent" type="CHAR" array="64"/>
+    <field name="chCalledUserAgent" type="CHAR" array="64"/>
+    <field name="bDisconnectDirect" type="BYTE">
+      <macro name="CHR_DISCONNET_DIRECT_CALLER" value="1"/>
+      <macro name="CHR_DISCONNET_DIRECT_CALLED" value="0"/>
+    </field>
+    <field name="abPad2" type="BYTE" array="1" ispadding="true"/>
 
-<!--
-        <field name="tStatStatus" type="CHR_STAT_STATUS_T" array="50"/>
-        <field name="tStatStatusNum" type="WORD32"/>
-        <field name="adwFailCode" type="WORD32" array="8"/>
-        <field name="adwFailCodeNum" type="WORD32"/>
--->
-    </fields>
+    <field name="chOneTestCaseId" type="CHAR" array="64"/>
+
+    <field name="dwTrailNodeID" type="WORD32"/>
+    <field name="abPad3" type="BYTE" array="4" ispadding="true" comment="对齐"/>
+
+    <field name="tStatStatus" type="CHR_STAT_STATUS_T" array="50"/>
+    <field name="tStatStatusNum" type="WORD32"/>
+    <field name="adwFailCode" type="WORD32" array="8"/>
+    <field name="adwFailCodeNum" type="WORD32"/>
+  </fields>
 </chr>
